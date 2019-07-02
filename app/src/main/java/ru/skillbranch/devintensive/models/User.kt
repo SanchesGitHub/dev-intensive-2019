@@ -13,7 +13,8 @@ data class User(
     var lastVisit: Date = Date(),
     var isOnline: Boolean = false
 ) {
-//    var introBit: String
+
+    //var introBit: String
 
     constructor(id: String, firstName: String?, lastName: String?) : this(
         id = id,
@@ -22,10 +23,10 @@ data class User(
         avatar = null
     )
 
-    constructor(id: String) : this(id, "John", "Doe")
+    //constructor(id: String) : this(id, "John", "Doe")
 
-init {
-//        introBit = getIntro()
+    init {
+        //introBit = getIntro()
 
         println(
             "It`s Alive!!! \n" +
@@ -34,7 +35,7 @@ init {
         )
     }
 
-    private fun getIntro() = """
+    /*private fun getIntro() = """
         tu tu ru tuuuuuuuu!!!!
         tu tu ru tuuuuuuuu....
 
@@ -42,9 +43,9 @@ init {
         tu tu ru tuuuuuuuu....
         ${"\n"}
         $firstName $lastName
-    """.trimIndent()
+    """.trimIndent()*/
 
-    fun printMe() = println(
+    /*fun printMe() = println(
         """
             id: $id
             firstName: $firstName
@@ -55,7 +56,7 @@ init {
             lastVisit: $lastVisit
             isOnline: $isOnline
         """.trimIndent()
-    )
+    )*/
 
     companion object Factory{
         private var lastId: Int =-1
