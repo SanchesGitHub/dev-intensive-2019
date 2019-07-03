@@ -49,7 +49,7 @@ fun Date.humanizeDiff(date:Date = Date()): String {
     val elapsedMinutes: Int = (different / minutesInMilli).toInt()
     different %= minutesInMilli
 
-    val elapsedSeconds: Int = (different / secondsInMilli).toInt()
+    //val elapsedSeconds: Int = (different / secondsInMilli).toInt()
 
     /*val printf = System.out.printf(
             "%d days, %d hours, %d minutes, %d seconds%n",
