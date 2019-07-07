@@ -2,119 +2,74 @@ package ru.skillbranch.devintensive.extensions
 
 import java.text.SimpleDateFormat
 import java.util.*
-
-const val SECOND = 1000L
-const val MINUTE = 60 * SECOND
-const val HOUR = 60 * MINUTE
-const val DAY = 24 * HOUR
+import kotlin.math.abs
+import ru.skillbranch.devintensive.extensions.TimeUnits.*
 
 fun Date.format(pattern: String = "HH:mm:ss dd.MM.yy"): String {
     val dateFormat = SimpleDateFormat(pattern, Locale("ru"))
     return dateFormat.format(this)
 }
 
-fun Date.add(value: Int, units: TimeUnits = TimeUnits.SECOND): Date {
-    var time = this.time
-
-    time += when (units) {
-        TimeUnits.SECOND -> value * SECOND
-        TimeUnits.MINUTE -> value * MINUTE
-        TimeUnits.HOUR -> value * HOUR
-        TimeUnits.DAY -> value * DAY
-    }
-    this.time = time
+fun Date.add(value: Int, units: TimeUnits = SECOND): Date {
+    this.time += units.value * value
     return this
 }
 
-fun Date.humanizeDiff(date:Date = Date()): String {
+fun Date.humanizeDiff(date: Date = Date()): String {
+    val dif = abs(this.time -  date.time)
+    val isPast = this.time < date.time
 
-    var different = date.time - this.time
-    val delta = different
-
-    /*System.out.println("startDate : $date")
-    System.out.println("endDate : $this")
-    System.out.println("different : $different")*/
-
-    val secondsInMilli: Long = 1000
-    val minutesInMilli = secondsInMilli * 60
-    val hoursInMilli = minutesInMilli * 60
-    val daysInMilli = hoursInMilli * 24
-
-    val elapsedDays: Int = (different / daysInMilli).toInt()
-    different %= daysInMilli
-
-    val elapsedHours: Int = (different / hoursInMilli).toInt()
-    different %= hoursInMilli
-
-    val elapsedMinutes: Int = (different / minutesInMilli).toInt()
-    different %= minutesInMilli
-
-    //val elapsedSeconds: Int = (different / secondsInMilli).toInt()
-
-    /*val printf = System.out.printf(
-            "%d days, %d hours, %d minutes, %d seconds%n",
-            elapsedDays, elapsedHours, elapsedMinutes, elapsedSeconds)*/
-
-    if(delta  in 0 until SECOND){
-        return "только что"
-    } else if (delta  in SECOND until 45*SECOND){
-        return "несколько секунд назад"
-    } else if (delta in 45*SECOND until 75*SECOND){
-        return "минуту назад"
-    } else if (delta in 75*SECOND until 45*MINUTE){
-        if(elapsedMinutes.equals(1)){
-            return "$elapsedMinutes минуту назад"
-        } else if (elapsedMinutes in 2..4){
-            return "$elapsedMinutes минуты назад"
-        } else if (elapsedMinutes in 5..20){
-            return "$elapsedMinutes минут назад"
-        } else if ((elapsedMinutes % 10) == 1){
-            return "$elapsedMinutes минуту назад"
-        } else if ((elapsedMinutes % 10) in 2..4){
-            return "$elapsedMinutes минуты назад"
-        } else
-            return "$elapsedMinutes минут назад"
-    } else if (delta in 45*MINUTE until 75*MINUTE){
-        return "час назад"
-    } else if (delta in 75*MINUTE until 22*HOUR){
-        if(elapsedHours.equals(1)){
-            return "$elapsedHours час назад"
-        } else if (elapsedHours in 2..4){
-            return "$elapsedHours часа назад"
-        } else if (elapsedHours in 5..20){
-            return "$elapsedHours часов назад"
-        } else if ((elapsedHours % 10) == 1){
-            return "$elapsedHours час назад"
-        } else if ((elapsedHours % 10) in 2..4){
-            return "$elapsedHours часа назад"
-        } else
-            return "$elapsedHours часов назад"
-    } else if (delta in 22*HOUR until 26*HOUR){
-        return "день назад"
-    } else if (delta in 26*HOUR until 360*DAY){
-        if(elapsedDays.equals(1)){
-            return "$elapsedDays день назад"
-        } else if (elapsedDays in 2..4){
-            return "$elapsedDays дня назад"
-        } else if (elapsedDays in 5..20){
-            return "$elapsedDays дней назад"
-        } else if ((elapsedDays % 10) == 1){
-            return "$elapsedDays день назад"
-        } else if ((elapsedDays % 10) in 2..4){
-            return "$elapsedDays дня назад"
-        } else
-            return "$elapsedDays дней назад"
-    } else if (delta >= 360*DAY) {
-        return "более года назад"
+    return when {
+        dif <= SECOND.value -> "только что"
+        dif <= SECOND.value * 45 -> getTenseForm("несколько секунд", isPast)
+        dif <= SECOND.value * 75 -> getTenseForm("минуту", isPast)
+        dif <= MINUTE.value * 45 -> getTenseForm(MINUTE.plural((dif / MINUTE.value).toInt()), isPast)
+        dif <= MINUTE.value * 75 -> getTenseForm("час", isPast)
+        dif <= HOUR.value * 22 -> getTenseForm(HOUR.plural((dif / HOUR.value).toInt()), isPast)
+        dif <= HOUR.value * 26 -> getTenseForm("день", isPast)
+        dif <= DAY.value * 360 -> getTenseForm(DAY.plural((dif / DAY.value).toInt()), isPast)
+        else -> if(isPast) "более года назад" else "более чем через год"
     }
-
-    return "error"
 }
 
+fun getTenseForm(interval: String, isPast: Boolean): String {
+    val prefix = if (isPast) "" else "через"
+    val postfix = if (isPast) "назад" else ""
+    return "$prefix $interval $postfix".trim()
+}
 
-enum class TimeUnits{
-    SECOND,
-    MINUTE,
-    HOUR,
-    DAY
+fun getPluralForm(amount: Int, units: TimeUnits): String {
+
+    return when(val posAmount = abs(amount) % 100){
+        1 -> Plurals.ONE.get(units)
+        in 2..4 -> Plurals.FEW.get(units)
+        0, in 5..19 -> Plurals.MANY.get(units)
+        else -> getPluralForm(posAmount % 10, units)
+    }
+}
+
+enum class Plurals(private val second: String, private val minute: String, private val hour: String, private val day: String){
+    ONE("секунду", "минуту", "час", "день"),
+    FEW("секунды", "минуты", "часа", "дня"),
+    MANY("секунд","минут", "часов", "дней");
+
+    fun get(unit: TimeUnits): String {
+        return when(unit){
+            SECOND -> second
+            MINUTE -> minute
+            HOUR -> hour
+            DAY -> day
+        }
+    }
+}
+
+enum class TimeUnits(val value:Long){
+    SECOND(1000L),
+    MINUTE(60 * SECOND.value),
+    HOUR(60 * MINUTE.value),
+    DAY(24 * HOUR.value);
+
+    fun plural(value: Int): String{
+        return "$value ${getPluralForm(value, this)}"
+    }
 }
