@@ -39,8 +39,9 @@ fun getTenseForm(interval: String, isPast: Boolean): String {
 }
 
 fun getPluralForm(amount: Int, units: TimeUnits): String {
+    val posAmount = abs(amount) % 100
 
-    return when(val posAmount = abs(amount) % 100){
+    return when(posAmount){
         1 -> Plurals.ONE.get(units)
         in 2..4 -> Plurals.FEW.get(units)
         0, in 5..19 -> Plurals.MANY.get(units)
@@ -73,3 +74,4 @@ enum class TimeUnits(val value:Long){
         return "$value ${getPluralForm(value, this)}"
     }
 }
+
