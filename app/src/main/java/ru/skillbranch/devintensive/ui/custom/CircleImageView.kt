@@ -60,15 +60,18 @@ class CircleImageView @JvmOverloads constructor (
     }
 
      override fun onDraw(canvas: Canvas) {
-         val bitmap = getBitmapFromDrawable() ?: return
+         var bitmap = getBitmapFromDrawable() ?: return
          if (width == 0 || height == 0) return
-         
-         val scaledBmp = getScaledBitmap(bitmap, width)
-         val croppedBmp = getCenterCroppedBitmap(scaledBmp, width)
-         val circleBmp = getCircleBitmap(croppedBmp)
-         val strokedBmp = getStrokedBitmap(circleBmp, borderWidth, borderColor)
 
-         canvas.drawBitmap(strokedBmp, 0F, 0F, null)
+         bitmap = getScaledBitmap(bitmap, width)
+         bitmap = getCenterCroppedBitmap(bitmap, width)
+         bitmap = getCircleBitmap(bitmap)
+
+         if (borderWidth > 0)
+             bitmap = getStrokedBitmap(bitmap, borderWidth, borderColor)
+
+         canvas.drawBitmap(bitmap, 0F, 0F, null)
+         //setImageBitmap(bitmap)
     }
 
     fun generateAvatar(text: String?, sizeSp: Int, theme: Resources.Theme){
@@ -82,6 +85,7 @@ class CircleImageView @JvmOverloads constructor (
 
             this.text = text
             bitmap = image
+            setImageBitmap(bitmap)
             invalidate()
         }
     }
@@ -139,7 +143,7 @@ class CircleImageView @JvmOverloads constructor (
     private fun getCenterCroppedBitmap(bitmap: Bitmap, size: Int): Bitmap {
         val cropStartX = (bitmap.width - size) / 2
         val cropStartY = (bitmap.height - size) / 2
-        
+
         return Bitmap.createBitmap(bitmap, cropStartX, cropStartY, size, size)
     }
 
